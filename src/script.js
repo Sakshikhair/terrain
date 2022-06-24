@@ -7,7 +7,7 @@ import * as dat from 'dat.gui'
 const textureLoader = new THREE.TextureLoader()
 const height = textureLoader.load('/textures/h.png')
 const texture = textureLoader.load('/textures/texture.jpg')
-const alpha = textureLoader.load('/alpha.png')
+const alpha = textureLoader.load('/textures/alpha.jpg')
 
 
 // Debug
@@ -27,7 +27,9 @@ const material = new THREE.MeshStandardMaterial({
     color: 'gray',
     map: texture,
     displacementMap: height,
-    displacementScale: .6
+    displacementScale: .6,
+    alphaMap: alpha,
+    transparent: true
 })
 
 const plane = new THREE.Mesh(geometry, material)
@@ -42,7 +44,7 @@ gui.add(plane.rotation, 'x').min(0).max(600)
 
 //Lights
 //Light 2
-const pointLight2 = new THREE.PointLight(0x7278ac, 2)
+const pointLight2 = new THREE.PointLight(0x1086d9, 3)
 pointLight2.position.set(3, 2.5, 1.21)
 pointLight2.intensity = 10
 scene.add(pointLight2)
@@ -61,32 +63,6 @@ const light2color = {
 light2.addColor(light2color, 'color').onChange(() => {
     pointLight2.color.set(light2color.color)
 })
-
-//Light 3
-// const pointLight3 = new THREE.PointLight(0xffff, 2)
-// pointLight3.position.set(1,3,-1.39)
-// pointLight3.intensity = 10
-// scene.add(pointLight3)
-// const light3 = gui.addFolder('Light 3')
-// light3.add(pointLight3.position,'x').min(-6).max(6).step(0.01)
-// light3.add(pointLight3.position,'y').min(-3).max(3).step(0.01)
-// light3.add(pointLight3.position,'z').min(-3).max(3).step(0.01)
-// light3.add(pointLight3,'intensity').min(0).max(10).step(0.01)
-
-// const light3color = {
-//     color: 0xff0000
-// }
-// light3.addColor(light3color, 'color').onChange(()=>{
-//     pointLight3.color.set(light3color.color)
-// })
-// const light2color = {
-//     color: 0xff0000
-// }
-// light2.addColor(light2color, 'color').onChange(()=>{
-//     pointLight2.color.set(light2color.color)
-// })
-// const pointLightHelper2 = new THREE.PointLightHelper(pointLight3,1)
-// scene.add(pointLightHelper2)
 
 
 /**
@@ -130,7 +106,7 @@ scene.add(camera)
  */
 const renderer = new THREE.WebGLRenderer({
     canvas: canvas,
-    alpha: true
+    alpha: false
 })
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -138,20 +114,14 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 /**
  * Animate
  */
-document.addEventListener('mousemove', onDocumentMouseMove)
+document.addEventListener('mousemove', animateTerrain)
 
-let mouseX = 0
+
 let mouseY = 0
 
-let targetX = 0
-let targetY = 0
-
-const windowHalfX = window.innerWidth / 2;
-const windowHalfY = window.innerHeight / 2;
-
-function onDocumentMouseMove(event) {
-    mouseX = (event.clientX - windowHalfX)
-    mouseY = (event.clientY - windowHalfY)
+function animateTerrain(event) {
+   
+    mouseY = event.clientY
 }
 const clock = new THREE.Clock()
 
@@ -159,6 +129,7 @@ const tick = () => {
    
     const elapsedTime = clock.getElapsedTime()
     plane.rotation.z = .3* elapsedTime
+    plane.material.displacementScale = 0.3 + mouseY*0.0008
     renderer.render(scene, camera)
 
     // Call tick again on the next frame
